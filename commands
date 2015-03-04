@@ -1,0 +1,11 @@
+cmsDriver.py step1 --filein file:unweighted_events.lhe --fileout file:gen.root --mc --eventcontent LHE --datatier GEN --conditions auto:mc --step NONE --python_filename gen.py --no_exec --customise Configuration/DataProcessing/Utils.addMonitoring -n 1000
+
+cmsDriver.py Configuration/GenProduction/python/ThirteenTeV/Hadronizer_MgmMatchTune4C_13TeV_madgraph_pythia8_Tauola_cff.py --filein file:gen.root --fileout file:sim.root --mc --eventcontent RAWSIM --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM --conditions auto:mc --step GEN,SIM --magField 38T_PostLS1 --geometry Extended2015 --python_filename sim.py --no_exec -n 1000
+
+<MGParamCMS>
+             5 = nqmatch    ! Max Jet Flavor
+             3 = maxjets    ! Largest number (inclusive ktMLM matching multipl.)
+             0 = minjets    ! Smallest number of additional light flavour jets
+           5.0 = etaclmax   ! Maximum pseudorapidity for particles to cluster
+          20.0 = qcut       ! Jet matching threshold for ktMLM scheme
+</MGParamCMS>
