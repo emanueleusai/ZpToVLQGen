@@ -31,12 +31,35 @@ public:
   }
 private:
   std::map< std::string, TH1D* > histos1D_;
+
+  int checkNof(int pdgid, const std::vector<int> idup_)
+  {
+    int n=0;
+    for(auto id : idup_)
+    {
+      if (abs(id)==pdgid) n++;
+    }
+    return n;
+  }
+
+  bool checkDau(int mpdg, int d1pdg, int d2pdg, const std::vector<int> idup_, const std::vector< std::pair< int, int > > mothup_)
+  {
+    vector<int> dau;
+    for(unsigned int i=0; i<idup_.size(); i++)
+    {
+      if ((abs(idup_[mothup_[i].first-1])==mpdg) || (abs(idup_[mothup_[i].second-1])==mpdg)) dau.push_back(idup_[i]);
+    }
+    if (dau.size()!=2) return false;
+    if ((((abs(dau[0])==d1pdg) && (abs(dau[1])==d2pdg)) || ((abs(dau[0])==d2pdg) && (abs(dau[1])==d1pdg))) /*&& (dau[0]/abs(dau[0])*dau[1]/abs(dau[1])<0)*/ ) return true;
+    return false;
+  }
+
   void analyze( const Event & iEvent, const EventSetup & iSetup ) override {
 
     Handle<LHEEventProduct> evt;
     iEvent.getByLabel( src_, evt );
 
-    //int zprimepdg=9900113;
+    int zprimepdg=9900113;
     int tprimepdg=8000001;
 
     const lhef::HEPEUP hepeup_ = evt->hepeup();
@@ -46,30 +69,52 @@ private:
     const std::vector<lhef::HEPEUP::FiveVector> pup_ = hepeup_.PUP;
     const std::vector< std::pair< int, int > > mothup_ = hepeup_.MOTHUP;
 
-    std::cout << "Number of particles = " << nup_ << std::endl;
+    // std::cout << "Number of particles = " << nup_ << std::endl;
 
-    if ( evt->pdf() != NULL ) {
-      std::cout << "PDF scale = " << std::setw(14) << std::fixed << evt->pdf()->scalePDF << std::endl;  
-      std::cout << "PDF 1 : id = " << std::setw(14) << std::fixed << evt->pdf()->id.first 
-                << " x = " << std::setw(14) << std::fixed << evt->pdf()->x.first 
-                << " xPDF = " << std::setw(14) << std::fixed << evt->pdf()->xPDF.first << std::endl;  
-      std::cout << "PDF 2 : id = " << std::setw(14) << std::fixed << evt->pdf()->id.second 
-                << " x = " << std::setw(14) << std::fixed << evt->pdf()->x.second 
-                << " xPDF = " << std::setw(14) << std::fixed << evt->pdf()->xPDF.second << std::endl;  
-    }
+    // if ( evt->pdf() != NULL ) {
+    //   std::cout << "PDF scale = " << std::setw(14) << std::fixed << evt->pdf()->scalePDF << std::endl;  
+    //   std::cout << "PDF 1 : id = " << std::setw(14) << std::fixed << evt->pdf()->id.first 
+    //             << " x = " << std::setw(14) << std::fixed << evt->pdf()->x.first 
+    //             << " xPDF = " << std::setw(14) << std::fixed << evt->pdf()->xPDF.first << std::endl;  
+    //   std::cout << "PDF 2 : id = " << std::setw(14) << std::fixed << evt->pdf()->id.second 
+    //             << " x = " << std::setw(14) << std::fixed << evt->pdf()->x.second 
+    //             << " xPDF = " << std::setw(14) << std::fixed << evt->pdf()->xPDF.second << std::endl;  
+    // }
+
+if(!(
+    checkNof(6,idup_)==1 &&
+    checkNof(zprimepdg,idup_)==1 &&
+    checkNof(tprimepdg,idup_)==1 &&
+    checkDau(zprimepdg,tprimepdg,6,idup_,mothup_) &&
+    checkDau(tprimepdg,5,24,idup_,mothup_) &&
+    (checkDau(6,5,24,idup_,mothup_) || checkDau(6,4,24,idup_,mothup_) ) )
+    ){
+
+std::cout<<"NO\n";
+std::cout<<"checkNof(6,idup_)==1 " << (bool) (checkNof(6,idup_)==1) <<std::endl;
+std::cout<<"checkNof(zprimepdg,idup_)==1 "<<(bool) (checkNof(zprimepdg,idup_)==1) <<std::endl;
+std::cout<<"checkNof(tprimepdg,idup_)==1 "<<(bool) (checkNof(tprimepdg,idup_)==1) <<std::endl;
+std::cout<<"checkDau(zprimepdg,tprimepdg,6,idup_,mothup_) "<<checkDau(zprimepdg,tprimepdg,6,idup_,mothup_) <<std::endl;
+std::cout<<"checkDau(tprimepdg,5,24,idup_,mothup_) "<<checkDau(tprimepdg,5,24,idup_,mothup_) <<std::endl;
+std::cout<<"checkDau(6,5,24,idup_,mothup_) "<<checkDau(6,5,24,idup_,mothup_) <<std::endl;
+std::cout<<"checkDau(6,4,24,idup_,mothup_) "<<checkDau(6,4,24,idup_,mothup_) <<std::endl;
+std::cout<<std::endl;
+
+} 
+
 
     for ( unsigned int icount = 0 ; icount < (unsigned int)nup_; icount++ ) {
 
-      std::cout << "# " << std::setw(14) << std::fixed << icount 
-                << std::setw(14) << std::fixed << idup_[icount] 
-                << std::setw(14) << std::fixed << (pup_[icount])[0] 
-                << std::setw(14) << std::fixed << (pup_[icount])[1] 
-                << std::setw(14) << std::fixed << (pup_[icount])[2] 
-                << std::setw(14) << std::fixed << (pup_[icount])[3] 
-                << std::setw(14) << std::fixed << (pup_[icount])[4]
-                << std::setw(14) << std::fixed << mothup_[icount].first
-                << std::setw(14) << std::fixed << mothup_[icount].second
-                << std::endl;
+      // std::cout << "# " << std::setw(14) << std::fixed << icount 
+      //           << std::setw(14) << std::fixed << idup_[icount] 
+      //           << std::setw(14) << std::fixed << (pup_[icount])[0] 
+      //           << std::setw(14) << std::fixed << (pup_[icount])[1] 
+      //           << std::setw(14) << std::fixed << (pup_[icount])[2] 
+      //           << std::setw(14) << std::fixed << (pup_[icount])[3] 
+      //           << std::setw(14) << std::fixed << (pup_[icount])[4]
+      //           << std::setw(14) << std::fixed << mothup_[icount].first
+      //           << std::setw(14) << std::fixed << mothup_[icount].second
+      //           << std::endl;
 
        if (abs(idup_[icount])==6) histos1D_[ "topPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
        if ((abs(idup_[mothup_[icount].first-1])==tprimepdg) && (abs(idup_[icount])==24)) histos1D_[ "wtpPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
@@ -82,11 +127,11 @@ private:
        if (abs(idup_[icount])==tprimepdg) histos1D_[ "tprimeP" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)+pow((pup_[icount])[2],2)));
     }
     if( evt->weights().size() ) {
-      std::cout << "weights:" << std::endl;
+      //std::cout << "weights:" << std::endl;
       for ( size_t iwgt = 0; iwgt < evt->weights().size(); ++iwgt ) {
 	const LHEEventProduct::WGT& wgt = evt->weights().at(iwgt);
-	std::cout << "\t" << wgt.id << ' ' 
-		  << std::scientific << wgt.wgt << std::endl;
+	//std::cout << "\t" << wgt.id << ' ' 
+		//  << std::scientific << wgt.wgt << std::endl;
       }
     }
 
