@@ -2,6 +2,8 @@ cmsDriver.py step1 --filein file:unweighted_events.lhe --fileout file:gen.root -
 
 cmsDriver.py Configuration/GenProduction/python/ThirteenTeV/Hadronizer_MgmMatchTune4C_13TeV_madgraph_pythia8_Tauola_cff.py --filein file:gen.root --fileout file:sim.root --mc --eventcontent RAWSIM --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM --conditions auto:mc --step GEN,SIM --magField 38T_PostLS1 --geometry Extended2015 --python_filename sim.py --no_exec -n 1000
 
+cmsDriver.py Configuration/GenProduction/python/ThirteenTeV/Hadronizer_Tune4C_13TeV_aMCatNLO_LHE_pythia8_Tauola_cff.py --filein file:gen.root --fileout file:sim3.root --mc --eventcontent RAWSIM --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM --conditions auto:mc --step GEN,SIM --magField 38T_PostLS1 --geometry Extended2015 --python_filename sim2.py --no_exec -n 5
+
 <MGParamCMS>
              5 = nqmatch    ! Max Jet Flavor
              3 = maxjets    ! Largest number (inclusive ktMLM matching multipl.)

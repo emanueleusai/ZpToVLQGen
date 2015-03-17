@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: Configuration/GenProduction/python/ThirteenTeV/Hadronizer_MgmMatchTune4C_13TeV_madgraph_pythia8_Tauola_cff.py --filein file:gen.root --fileout file:sim.root --mc --eventcontent RAWSIM --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM --conditions auto:mc --step GEN,SIM --magField 38T_PostLS1 --geometry Extended2015 --python_filename sim.py --no_exec -n 1000
+# with command line options: Configuration/GenProduction/python/ThirteenTeV/Hadronizer_Tune4C_13TeV_aMCatNLO_LHE_pythia8_Tauola_cff.py --filein file:gen.root --fileout file:sim3.root --mc --eventcontent RAWSIM --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM --conditions auto:mc --step GEN,SIM --magField 38T_PostLS1 --geometry Extended2015 --python_filename sim2.py --no_exec -n 5
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('SIM')
@@ -39,7 +39,7 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('Configuration/GenProduction/python/ThirteenTeV/Hadronizer_MgmMatchTune4C_13TeV_madgraph_pythia8_Tauola_cff.py nevts:1000'),
+    annotation = cms.untracked.string('Configuration/GenProduction/python/ThirteenTeV/Hadronizer_Tune4C_13TeV_aMCatNLO_LHE_pythia8_Tauola_cff.py nevts:5'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
@@ -55,7 +55,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('file:sim.root'),
+    fileName = cms.untracked.string('file:sim3.root'),
     outputCommands = process.RAWSIMEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -83,25 +83,27 @@ process.generator = cms.EDFilter("Pythia8HadronizerFilter",
         parameterSets = cms.vstring('processParameters'),
         processParameters = cms.vstring('Main:timesAllowErrors    = 10000', 
             'ParticleDecays:limitTau0 = on', 
-            'ParticleDecays:tauMax = 10', 
+            'ParticleDecays:tau0Max = 10', 
             'Tune:ee 3', 
-            'Tune:pp 5')
+            'Tune:pp 5', 
+            'SpaceShower:pTmaxMatch = 1', 
+            'SpaceShower:pTmaxFudge = 1', 
+            'SpaceShower:MEcorrections = off', 
+            'TimeShower:pTmaxMatch = 1', 
+            'TimeShower:pTmaxFudge = 1', 
+            'TimeShower:MEcorrections = off', 
+            'TimeShower:globalRecoil = on', 
+            'TimeShower:limitPTmaxGlobal = on', 
+            'TimeShower:nMaxGlobalRecoil = 1', 
+            'TimeShower:globalRecoilMode = 2', 
+            'TimeShower:nMaxGlobalBranch = 1', 
+            'SLHA:keepSM = on', 
+            'SLHA:minMassSM = 1000.', 
+            'Check:epTolErr = 0.01')
     ),
     UseExternalGenerators = cms.untracked.bool(True),
     comEnergy = cms.double(13000.0),
     filterEfficiency = cms.untracked.double(1.0),
-    jetMatching = cms.untracked.PSet(
-        MEMAIN_etaclmax = cms.double(-1),
-        MEMAIN_excres = cms.string(''),
-        MEMAIN_maxjets = cms.int32(-1),
-        MEMAIN_minjets = cms.int32(-1),
-        MEMAIN_nqmatch = cms.int32(5),
-        MEMAIN_qcut = cms.double(-1),
-        MEMAIN_showerkt = cms.double(0),
-        mode = cms.string('auto'),
-        outTree_flag = cms.int32(0),
-        scheme = cms.string('Madgraph')
-    ),
     maxEventsToPrint = cms.untracked.int32(1),
     pythiaHepMCVerbosity = cms.untracked.bool(False),
     pythiaPylistVerbosity = cms.untracked.int32(1)

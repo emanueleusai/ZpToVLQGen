@@ -91,14 +91,26 @@ if(!(
     ){
 
 std::cout<<"NO\n";
-std::cout<<"checkNof(6,idup_)==1 " << (bool) (checkNof(6,idup_)==1) <<std::endl;
-std::cout<<"checkNof(zprimepdg,idup_)==1 "<<(bool) (checkNof(zprimepdg,idup_)==1) <<std::endl;
-std::cout<<"checkNof(tprimepdg,idup_)==1 "<<(bool) (checkNof(tprimepdg,idup_)==1) <<std::endl;
+std::cout<<"checkNof(6,idup_)==1 " << checkNof(6,idup_) <<std::endl;
+std::cout<<"checkNof(zprimepdg,idup_)==1 "<<checkNof(zprimepdg,idup_) <<std::endl;
+std::cout<<"checkNof(tprimepdg,idup_)==1 "<<checkNof(tprimepdg,idup_) <<std::endl;
 std::cout<<"checkDau(zprimepdg,tprimepdg,6,idup_,mothup_) "<<checkDau(zprimepdg,tprimepdg,6,idup_,mothup_) <<std::endl;
 std::cout<<"checkDau(tprimepdg,5,24,idup_,mothup_) "<<checkDau(tprimepdg,5,24,idup_,mothup_) <<std::endl;
 std::cout<<"checkDau(6,5,24,idup_,mothup_) "<<checkDau(6,5,24,idup_,mothup_) <<std::endl;
 std::cout<<"checkDau(6,4,24,idup_,mothup_) "<<checkDau(6,4,24,idup_,mothup_) <<std::endl;
 std::cout<<std::endl;
+for ( unsigned int icount = 0 ; icount < (unsigned int)nup_; icount++ ) {
+      std::cout << "# " << std::setw(14) << std::fixed << icount 
+                << std::setw(14) << std::fixed << idup_[icount] 
+                << std::setw(14) << std::fixed << (pup_[icount])[0] 
+                << std::setw(14) << std::fixed << (pup_[icount])[1] 
+                << std::setw(14) << std::fixed << (pup_[icount])[2] 
+                << std::setw(14) << std::fixed << (pup_[icount])[3] 
+                << std::setw(14) << std::fixed << (pup_[icount])[4]
+                << std::setw(14) << std::fixed << mothup_[icount].first
+                << std::setw(14) << std::fixed << mothup_[icount].second
+                << std::endl;
+              }
 
 } 
 
@@ -125,6 +137,10 @@ std::cout<<std::endl;
        if ((abs(idup_[mothup_[icount].first-1])==tprimepdg) && (abs(idup_[icount])==24)) histos1D_[ "wtpP" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)+pow((pup_[icount])[2],2)));
        if ((abs(idup_[mothup_[icount].first-1])==tprimepdg) && (abs(idup_[icount])==5)) histos1D_[ "btpP" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)+pow((pup_[icount])[2],2)));
        if (abs(idup_[icount])==tprimepdg) histos1D_[ "tprimeP" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)+pow((pup_[icount])[2],2)));
+
+       if (abs(idup_[icount])==6) histos1D_[ "topM" ]->Fill((pup_[icount])[4]);
+       if (abs(idup_[icount])==tprimepdg) histos1D_[ "tprimeM" ]->Fill((pup_[icount])[4]);
+       if (abs(idup_[icount])==zprimepdg) histos1D_[ "zprimeM" ]->Fill((pup_[icount])[4]);
     }
     if( evt->weights().size() ) {
       //std::cout << "weights:" << std::endl;
@@ -149,6 +165,10 @@ edm::Service< TFileService > fileService;
   histos1D_[ "tprimeP" ] = fileService->make< TH1D >( "tprimeP", ";T' p [GeV];Events", 20, 0., 1000);
   histos1D_[ "wtpP" ] = fileService->make< TH1D >( "wtpP", ";W from T' p [GeV];Events", 20, 0., 1000);
   histos1D_[ "btpP" ] = fileService->make< TH1D >( "btpP", ";b from T' p [GeV];Events", 20, 0., 1000);
+
+  histos1D_[ "topM" ] = fileService->make< TH1D >( "topM", ";top mass [GeV];Events", 100, 100, 200);
+  histos1D_[ "tprimeM" ] = fileService->make< TH1D >( "tprimeM", ";T' mass [GeV];Events", 100, 550, 850);
+  histos1D_[ "zprimeM" ] = fileService->make< TH1D >( "zprimeM", ";Z' mass [GeV];Events", 100, 1450, 1850);
 
     // Handle<LHERunInfoProduct> run;
     // iRun.getByLabel( src_, run );

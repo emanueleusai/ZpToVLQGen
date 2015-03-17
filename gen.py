@@ -19,7 +19,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("LHESource",
-    fileNames = cms.untracked.vstring('file:unweighted_events.lhe')
+    # fileNames = cms.untracked.vstring('file:/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/Zp_Tt/Events/prova2/unweighted_events.lhe')
+    fileNames = cms.untracked.vstring('file:/afs/desy.de/user/u/usaiem/out.lhe')
 )
 
 process.options = cms.untracked.PSet(
@@ -41,7 +42,7 @@ process.LHEoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     #eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('file:gen.root'),
+    fileName = cms.untracked.string('file:gen2.root'),
     outputCommands = process.LHEEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
