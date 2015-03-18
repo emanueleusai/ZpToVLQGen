@@ -1,10 +1,12 @@
 from math import log10,floor,ceil
 from shutil import copy
-from subprocess import call
+from subprocess import call,Popen
 import gzip
-
+from utils import compare,hadd,doeff,make_plot
+from ROOT import TFile,gROOT
+gROOT.SetBatch()
 #process name
-process_name='testscan1'
+process_name='testscan3'
 print 'process name',process_name
 #list of zprime mass points
 zprime_mass_points=[1500.0,2000.0,2500.0]
@@ -73,16 +75,16 @@ def main():
 		zprime_index=zprime_mass_points.index(zprime_mass)
 		for tprime_mass in tprime_mass_points[zprime_index]:
 			for zprime_width in zprime_widths[zprime_index]:
-				print 'working on m_zp=',zprime_mass,'m_tp=',tprime_mass,'w_zp=',zprime_width
+				print 'working on m_zp=',zprime_mass,'m_tp=',tprime_mass,'w_zp=',zprime_width, 'w_tp', tprime_mass/100.0
 				#moving the param card
 				print 'moving the param card'
 				param_prototype_file=open(prototype_card_folder+prototype_prefix+param_card_name,'r')
 				param_destination_file=open(destination_card_folder+param_card_name,'w')
 				for line in param_prototype_file.readlines():
-					if 'nevents' in line:
-						param_destination_file.write('  '+str(nevts)+' = nevents ! Number of unweighted events requested \n')
 					if 'DECAY 9900113' in line:
 						param_destination_file.write('DECAY 9900113 '+format(zprime_width,'e')+' # wrho0 \n')
+					elif 'DECAY 8000001' in line:
+						param_destination_file.write('DECAY 8000001 '+format(tprime_mass/100.0,'e')+' # WT23 \n')
 					elif '9900113' in line and 'mrho0' in line:
 						param_destination_file.write('  9900113 '+format(zprime_mass,'e')+' # mrho0 \n')
 					elif '8000001' in line and 'MT23' in line:
@@ -117,11 +119,170 @@ def analyze():
 		for tprime_mass in tprime_mass_points[zprime_index]:
 			for zprime_width in zprime_widths[zprime_index]:
 				print 'working on m_zp=',zprime_mass,'m_tp=',tprime_mass,'w_zp=',zprime_width	
-				destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'/unweighted_events.lhe'
+				Popen(['cmsRun','ZpToVLQGenAnalyzer/python/testReader2_cfg.py',process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))])
+
+def plot():
+	compare(
+		name='comp1500topPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/topPt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2000topPt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/topPt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2500topPt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/topPt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+
+	compare(
+		name='comp1500wtpPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/wtpPt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2000wtpPt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/wtpPt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2500wtpPt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/wtpPt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+
+	compare(
+		name='comp1500btpPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/btpPt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2000btpPt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/btpPt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2500btpPt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/btpPt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+
+	compare(
+		name='comp1500tprimeM',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/tprimeM']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='tprime m',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2000tprimeM',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/tprimeM']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='tprime m',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='comp2500tprimeM',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/tprimeM']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='tprime m',ytitle='',minx=0,maxx=3000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
 
 
+	compare(
+		name='compW1500topPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
+		name_list=['lhedump/topPt']*2,
+		legend_list=['w_zp=15GeV','w_zp=150GeV'],
+		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='compW1500wtpPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
+		name_list=['lhedump/wtpPt']*2,
+		legend_list=['w_zp=15GeV','w_zp=150GeV'],
+		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='compW1500btpPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
+		name_list=['lhedump/btpPt']*2,
+		legend_list=['w_zp=15GeV','w_zp=150GeV'],
+		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+
+
+	compare(
+		name='compW2000topPt',
+		file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
+		name_list=['lhedump/topPt']*2,
+		legend_list=['w_zp=20GeV','w_zp=200GeV'],
+		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='compW2000wtpPt',
+		file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
+		name_list=['lhedump/wtpPt']*2,
+		legend_list=['w_zp=20GeV','w_zp=200GeV'],
+		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='compW2000btpPt',
+		file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
+		name_list=['lhedump/btpPt']*2,
+		legend_list=['w_zp=20GeV','w_zp=200GeV'],
+		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+
+
+	compare(
+		name='compW2500topPt',
+		file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
+		name_list=['lhedump/topPt']*2,
+		legend_list=['w_zp=25GeV','w_zp=250GeV'],
+		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='compW2500wtpPt',
+		file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
+		name_list=['lhedump/wtpPt']*2,
+		legend_list=['w_zp=25GeV','w_zp=250GeV'],
+		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name='compW2500btpPt',
+		file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
+		name_list=['lhedump/btpPt']*2,
+		legend_list=['w_zp=25GeV','w_zp=250GeV'],
+		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	
 
 
 if __name__ == '__main__':
 	#main()
-	unzip()
+	#unzip()
+	#analyze()
+	plot()

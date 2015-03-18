@@ -156,19 +156,19 @@ for ( unsigned int icount = 0 ; icount < (unsigned int)nup_; icount++ ) {
   
   void beginRun(edm::Run const& iRun, edm::EventSetup const& es) override {
 edm::Service< TFileService > fileService;
-  histos1D_[ "topPt" ] = fileService->make< TH1D >( "topPt", ";top p_{T} [GeV];Events", 20, 0., 1000);
-  histos1D_[ "tprimePt" ] = fileService->make< TH1D >( "tprimePt", ";T' p_{T} [GeV];Events", 20, 0., 1000);
-  histos1D_[ "wtpPt" ] = fileService->make< TH1D >( "wtpPt", ";W from T' p_{T} [GeV];Events", 20, 0., 1000);
-  histos1D_[ "btpPt" ] = fileService->make< TH1D >( "btpPt", ";b from T' p_{T} [GeV];Events", 20, 0., 1000);
+  histos1D_[ "topPt" ] = fileService->make< TH1D >( "topPt", ";top p_{T} [GeV];Events", 200, 0., 2000);
+  histos1D_[ "tprimePt" ] = fileService->make< TH1D >( "tprimePt", ";T' p_{T} [GeV];Events", 200, 0., 2000);
+  histos1D_[ "wtpPt" ] = fileService->make< TH1D >( "wtpPt", ";W from T' p_{T} [GeV];Events", 200, 0., 2000);
+  histos1D_[ "btpPt" ] = fileService->make< TH1D >( "btpPt", ";b from T' p_{T} [GeV];Events", 200, 0., 2000);
 
-  histos1D_[ "topP" ] = fileService->make< TH1D >( "topP", ";top p [GeV];Events", 20, 0., 1000);
-  histos1D_[ "tprimeP" ] = fileService->make< TH1D >( "tprimeP", ";T' p [GeV];Events", 20, 0., 1000);
-  histos1D_[ "wtpP" ] = fileService->make< TH1D >( "wtpP", ";W from T' p [GeV];Events", 20, 0., 1000);
-  histos1D_[ "btpP" ] = fileService->make< TH1D >( "btpP", ";b from T' p [GeV];Events", 20, 0., 1000);
+  histos1D_[ "topP" ] = fileService->make< TH1D >( "topP", ";top p [GeV];Events", 200, 0., 2000);
+  histos1D_[ "tprimeP" ] = fileService->make< TH1D >( "tprimeP", ";T' p [GeV];Events", 200, 0., 2000);
+  histos1D_[ "wtpP" ] = fileService->make< TH1D >( "wtpP", ";W from T' p [GeV];Events", 200, 0., 2000);
+  histos1D_[ "btpP" ] = fileService->make< TH1D >( "btpP", ";b from T' p [GeV];Events", 200, 0., 2000);
 
   histos1D_[ "topM" ] = fileService->make< TH1D >( "topM", ";top mass [GeV];Events", 100, 100, 200);
-  histos1D_[ "tprimeM" ] = fileService->make< TH1D >( "tprimeM", ";T' mass [GeV];Events", 100, 550, 850);
-  histos1D_[ "zprimeM" ] = fileService->make< TH1D >( "zprimeM", ";Z' mass [GeV];Events", 100, 1450, 1850);
+  histos1D_[ "tprimeM" ] = fileService->make< TH1D >( "tprimeM", ";T' mass [GeV];Events", 200, 0, 2000);
+  histos1D_[ "zprimeM" ] = fileService->make< TH1D >( "zprimeM", ";Z' mass [GeV];Events", 300, 0, 3000);
 
     // Handle<LHERunInfoProduct> run;
     // iRun.getByLabel( src_, run );
