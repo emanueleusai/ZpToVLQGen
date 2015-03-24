@@ -4,10 +4,17 @@ from subprocess import call,Popen
 import gzip
 from utils import compare,hadd,doeff,make_plot
 from ROOT import TFile,gROOT
+from os import argv
+
 gROOT.SetBatch()
 #process name
 process_name='testscan3'
 print 'process name',process_name
+#final state
+final_states={'bW':'Zp_Wb_t','tZ':'Zp_Zt_t_madspin','tH':'Zp_ht_t_madspin'}
+final_state=argv[1]
+final_state_folder=final_states[final_state]
+print 'final state',final_state,'final state folder',final_state_folder
 #list of zprime mass points
 zprime_mass_points=[1500.0,2000.0,2500.0]
 print 'list of zprime mass points',zprime_mass_points
@@ -46,9 +53,9 @@ nsamples=len(zprime_mass_points)*len(tprime_mass_points[0])*len(zprime_widths[0]
 print 'number of samples',nsamples
 total_nevts=nsamples*nevts
 print 'total number of events',total_nevts
-prototype_card_folder='/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/syscal/sys_Cal/CMSSW_7_4_0_pre5/src/ZpToVLQGen/carte/'
+prototype_card_folder='/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/syscal/sys_Cal/CMSSW_7_4_0_pre5/src/ZpToVLQGen/carte_'+final_state+'/'
 # destination_card_folder='/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/syscal/sys_Cal/CMSSW_7_4_0_pre5/src/ZpToVLQGen/carte2/'
-destination_folder='/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/Zp_Tt/'
+destination_folder='/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/'+final_state_folder+'/'
 destination_card_folder=destination_folder+'Cards/'
 prototype_prefix='zpvlq_'
 run_card_name='run_card.dat'
