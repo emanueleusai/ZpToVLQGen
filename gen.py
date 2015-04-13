@@ -14,13 +14,13 @@ process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
 process.source = cms.Source("LHESource",
     # fileNames = cms.untracked.vstring('file:/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/Zp_Tt/Events/prova2/unweighted_events.lhe')
-    fileNames = cms.untracked.vstring('file:/afs/desy.de/user/u/usaiem/out.lhe')
+    fileNames = cms.untracked.vstring('file:/nfs/dust/cms/user/usaiem/gen2/Zp_Tt_all_j_madspin/Events/prova4_decayed_7/unweighted_events.lhe')
 )
 
 process.options = cms.untracked.PSet(
@@ -42,7 +42,7 @@ process.LHEoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     #eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('file:gen2.root'),
+    fileName = cms.untracked.string('file:/nfs/dust/cms/user/usaiem/gen/genall.root'),
     outputCommands = process.LHEEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )

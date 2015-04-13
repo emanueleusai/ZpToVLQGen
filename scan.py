@@ -1,19 +1,21 @@
 from math import log10,floor,ceil
-from shutil import copy
+from shutil import copy,move
 from subprocess import call,Popen
 import gzip
 from utils import compare,hadd,doeff,make_plot
 from ROOT import TFile,gROOT
-from os import argv
-
+from sys import argv
+from os import remove
 gROOT.SetBatch()
-#process name
-process_name='testscan3'
-print 'process name',process_name
+u='_'
 #final state
-final_states={'bW':'Zp_Wb_t','tZ':'Zp_Zt_t_madspin','tH':'Zp_ht_t_madspin'}
+final_states={'bW':'Zp_Tt','tZ':'Zp_Zt_t_madspin','tH':'Zp_ht_t_madspin'}
 final_state=argv[1]
 final_state_folder=final_states[final_state]
+#process name
+process_name='testscan3'
+process_name=process_name+u+final_state
+print 'process name',process_name
 print 'final state',final_state,'final state folder',final_state_folder
 #list of zprime mass points
 zprime_mass_points=[1500.0,2000.0,2500.0]
@@ -60,12 +62,17 @@ destination_card_folder=destination_folder+'Cards/'
 prototype_prefix='zpvlq_'
 run_card_name='run_card.dat'
 param_card_name='param_card.dat'
-u='_'
+madspin_card_name='madspin_card.dat'
 # proc_card_name='zpvlq_proc_card.dat'
 
 def main():
 	#copy(prototype_card_folder+run_card_name,destination_card_folder+run_card_name)
 	#moving the run card (only once!)
+	# print 'moving the madspin card'
+	# if final_state=='bW':
+	# 	move(destination_card_folder+madspin_card_name,destination_card_folder+madspin_card_name+'.old')
+	# else:
+	# 	copy(prototype_card_folder+prototype_prefix+madspin_card_name,destination_card_folder+madspin_card_name)
 	print 'moving the run card'
 	run_prototype_file=open(prototype_card_folder+prototype_prefix+run_card_name,'r')
 	run_destination_file=open(destination_card_folder+run_card_name,'w')
@@ -102,7 +109,7 @@ def main():
 				param_destination_file.close()
 				#running
 				print 'run madgraph for this configuration'
-				call(['/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/Zp_Tt/bin/generate_events',process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width)),'-f'])
+				call(['/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/'+final_state_folder+'/bin/generate_events',process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width)),'-f'])
 
 
 def unzip():
@@ -111,13 +118,33 @@ def unzip():
 		zprime_index=zprime_mass_points.index(zprime_mass)
 		for tprime_mass in tprime_mass_points[zprime_index]:
 			for zprime_width in zprime_widths[zprime_index]:
-				print 'working on m_zp=',zprime_mass,'m_tp=',tprime_mass,'w_zp=',zprime_width	
-				tmpunzipped=gzip.open(destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'/unweighted_events.lhe.gz','r')
+				print 'working on m_zp=',zprime_mass,'m_tp=',tprime_mass,'w_zp=',zprime_width
+				unzip_path=''
+
+				unzip_path=destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'/'
+				# if final_state=='bW':
+				# 	unzip_path=destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'/'
+				# else:
+				# 	unzip_path=destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'_decayed_1'+'/'
+				tmpunzipped=gzip.open(unzip_path+'unweighted_events.lhe.gz','r')
 				tmpread=tmpunzipped.read()
-				tmpout=open(destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'/unweighted_events.lhe','w')
+				dst=''
+				tmpout=open(unzip_path+'unweighted_events.lhe','w')
 				tmpout.write(tmpread)
 				tmpunzipped.close()
 				tmpout.close()
+				remove(unzip_path+'unweighted_events.lhe.gz')
+
+def copylhe():
+	print 'copying unzipped unweighted events'
+	for zprime_mass in zprime_mass_points:
+		zprime_index=zprime_mass_points.index(zprime_mass)
+		for tprime_mass in tprime_mass_points[zprime_index]:
+			for zprime_width in zprime_widths[zprime_index]:
+				print 'working on m_zp=',zprime_mass,'m_tp=',tprime_mass,'w_zp=',zprime_width
+				unzip_path=destination_folder+'Events/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'/'
+				copy(unzip_path+'unweighted_events.lhe','/nfs/dust/cms/user/usaiem/lhe/'+process_name+u+str(int(zprime_mass))+u+str(int(tprime_mass))+u+str(int(zprime_width))+'.lhe')
+
 
 def analyze():
 	print 'running the analysis'
@@ -130,21 +157,21 @@ def analyze():
 
 def plot():
 	compare(
-		name='comp1500topPt',
+		name=final_state+u+'comp1500topPt',
 		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
 		name_list=['lhedump/topPt']*3,
 		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
 		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2000topPt',
+		name=final_state+u+'comp2000topPt',
 		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
 		name_list=['lhedump/topPt']*3,
 		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
 		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2500topPt',
+		name=final_state+u+'comp2500topPt',
 		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
 		name_list=['lhedump/topPt']*3,
 		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
@@ -152,21 +179,21 @@ def plot():
 		)
 
 	compare(
-		name='comp1500wtpPt',
+		name=final_state+u+'comp1500wtpPt',
 		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
 		name_list=['lhedump/wtpPt']*3,
 		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
 		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2000wtpPt',
+		name=final_state+u+'comp2000wtpPt',
 		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
 		name_list=['lhedump/wtpPt']*3,
 		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
 		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2500wtpPt',
+		name=final_state+u+'comp2500wtpPt',
 		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
 		name_list=['lhedump/wtpPt']*3,
 		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
@@ -174,21 +201,21 @@ def plot():
 		)
 
 	compare(
-		name='comp1500btpPt',
+		name=final_state+u+'comp1500btpPt',
 		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
 		name_list=['lhedump/btpPt']*3,
 		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
 		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2000btpPt',
+		name=final_state+u+'comp2000btpPt',
 		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
 		name_list=['lhedump/btpPt']*3,
 		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
 		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2500btpPt',
+		name=final_state+u+'comp2500btpPt',
 		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
 		name_list=['lhedump/btpPt']*3,
 		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
@@ -196,21 +223,21 @@ def plot():
 		)
 
 	compare(
-		name='comp1500tprimeM',
+		name=final_state+u+'comp1500tprimeM',
 		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
 		name_list=['lhedump/tprimeM']*3,
 		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
 		normalize=False,drawoption='hE',xtitle='tprime m',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2000tprimeM',
+		name=final_state+u+'comp2000tprimeM',
 		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
 		name_list=['lhedump/tprimeM']*3,
 		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
 		normalize=False,drawoption='hE',xtitle='tprime m',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='comp2500tprimeM',
+		name=final_state+u+'comp2500tprimeM',
 		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
 		name_list=['lhedump/tprimeM']*3,
 		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
@@ -218,78 +245,175 @@ def plot():
 		)
 
 
+
+
+
 	compare(
-		name='compW1500topPt',
-		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
-		name_list=['lhedump/topPt']*2,
-		legend_list=['w_zp=15GeV','w_zp=150GeV'],
-		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp1500toptprimePt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/toptprimePt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='top from tprime pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='compW1500wtpPt',
-		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
-		name_list=['lhedump/wtpPt']*2,
-		legend_list=['w_zp=15GeV','w_zp=150GeV'],
-		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp2000toptprimePt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/toptprimePt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='top from tprime pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='compW1500btpPt',
-		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
-		name_list=['lhedump/btpPt']*2,
-		legend_list=['w_zp=15GeV','w_zp=150GeV'],
-		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp2500toptprimePt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/toptprimePt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='top from tprime pt',ytitle='',minx=0,maxx=3000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 
 
 	compare(
-		name='compW2000topPt',
-		file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
-		name_list=['lhedump/topPt']*2,
-		legend_list=['w_zp=20GeV','w_zp=200GeV'],
-		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp1500topzprimePt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/topzprimePt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='top from zprime pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='compW2000wtpPt',
-		file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
-		name_list=['lhedump/wtpPt']*2,
-		legend_list=['w_zp=20GeV','w_zp=200GeV'],
-		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp2000topzprimePt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/topzprimePt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='top from zprime pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='compW2000btpPt',
-		file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
-		name_list=['lhedump/btpPt']*2,
-		legend_list=['w_zp=20GeV','w_zp=200GeV'],
-		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp2500topzprimePt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/topzprimePt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='top from zprime pt',ytitle='',minx=0,maxx=3000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 
 
 	compare(
-		name='compW2500topPt',
-		file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
-		name_list=['lhedump/topPt']*2,
-		legend_list=['w_zp=25GeV','w_zp=250GeV'],
-		normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp1500zPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/zPt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='Z pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='compW2500wtpPt',
-		file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
-		name_list=['lhedump/wtpPt']*2,
-		legend_list=['w_zp=25GeV','w_zp=250GeV'],
-		normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp2000zPt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/zPt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='Z pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
 	compare(
-		name='compW2500btpPt',
-		file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
-		name_list=['lhedump/btpPt']*2,
-		legend_list=['w_zp=25GeV','w_zp=250GeV'],
-		normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		name=final_state+u+'comp2500zPt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/zPt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='Z pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
 		)
+
+	compare(
+		name=final_state+u+'comp1500hPt',
+		file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_900_15.root'),TFile(process_name+'_1500_1100_15.root')],
+		name_list=['lhedump/hPt']*3,
+		legend_list=['m_zp=1500 m_tp=700GeV','m_zp=1500 m_tp=900GeV','m_zp=1500 m_tp=1100GeV'],
+		normalize=False,drawoption='hE',xtitle='H pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name=final_state+u+'comp2000hPt',
+		file_list=[TFile(process_name+'_2000_900_20.root'),TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1500_20.root')],
+		name_list=['lhedump/hPt']*3,
+		legend_list=['m_zp=2000 m_tp=900GeV','m_zp=2000 m_tp=1200GeV','m_zp=2000 m_tp=1500GeV'],
+		normalize=False,drawoption='hE',xtitle='H pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+	compare(
+		name=final_state+u+'comp2500hPt',
+		file_list=[TFile(process_name+'_2500_1200_25.root'),TFile(process_name+'_2500_1500_25.root'),TFile(process_name+'_2500_1900_25.root')],
+		name_list=['lhedump/hPt']*3,
+		legend_list=['m_zp=2500 m_tp=1200GeV','m_zp=2500 m_tp=1500GeV','m_zp=2500 m_tp=1900GeV'],
+		normalize=False,drawoption='hE',xtitle='H pt',ytitle='',minx=0,maxx=2000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+		)
+
+
+
+
+	# compare(
+	# 	name='compW1500topPt',
+	# 	file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
+	# 	name_list=['lhedump/topPt']*2,
+	# 	legend_list=['w_zp=15GeV','w_zp=150GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+	# compare(
+	# 	name='compW1500wtpPt',
+	# 	file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
+	# 	name_list=['lhedump/wtpPt']*2,
+	# 	legend_list=['w_zp=15GeV','w_zp=150GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+	# compare(
+	# 	name='compW1500btpPt',
+	# 	file_list=[TFile(process_name+'_1500_700_15.root'),TFile(process_name+'_1500_700_150.root')],
+	# 	name_list=['lhedump/btpPt']*2,
+	# 	legend_list=['w_zp=15GeV','w_zp=150GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+
+
+	# compare(
+	# 	name='compW2000topPt',
+	# 	file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
+	# 	name_list=['lhedump/topPt']*2,
+	# 	legend_list=['w_zp=20GeV','w_zp=200GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+	# compare(
+	# 	name='compW2000wtpPt',
+	# 	file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
+	# 	name_list=['lhedump/wtpPt']*2,
+	# 	legend_list=['w_zp=20GeV','w_zp=200GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+	# compare(
+	# 	name='compW2000btpPt',
+	# 	file_list=[TFile(process_name+'_2000_1200_20.root'),TFile(process_name+'_2000_1200_200.root')],
+	# 	name_list=['lhedump/btpPt']*2,
+	# 	legend_list=['w_zp=20GeV','w_zp=200GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+
+
+	# compare(
+	# 	name='compW2500topPt',
+	# 	file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
+	# 	name_list=['lhedump/topPt']*2,
+	# 	legend_list=['w_zp=25GeV','w_zp=250GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='top pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+	# compare(
+	# 	name='compW2500wtpPt',
+	# 	file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
+	# 	name_list=['lhedump/wtpPt']*2,
+	# 	legend_list=['w_zp=25GeV','w_zp=250GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='w from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
+	# compare(
+	# 	name='compW2500btpPt',
+	# 	file_list=[TFile(process_name+'_2500_1900_25.root'),TFile(process_name+'_2500_1900_250.root')],
+	# 	name_list=['lhedump/btpPt']*2,
+	# 	legend_list=['w_zp=25GeV','w_zp=250GeV'],
+	# 	normalize=False,drawoption='hE',xtitle='b from tprime pt',ytitle='',minx=0,maxx=1000,rebin=2,miny=0,maxy=0,textsizefactor=0.7
+	# 	)
 	
 
 
 if __name__ == '__main__':
 	#main()
 	#unzip()
+	copylhe()
 	#analyze()
-	plot()
+	#plot()
