@@ -1,10 +1,13 @@
 #!/usr/bin/env cmsRun
 import FWCore.ParameterSet.Config as cms
+import sys
+
+name=sys.argv[2]
 
 process = cms.Process("LHE")
 
 process.source = cms.Source("LHESource",
-	fileNames = cms.untracked.vstring('file:/afs/desy.de/user/u/usaiem/xxl-af-cms/gen2/test/Zp_Tt/Events/prova2/unweighted_events.lhe')
+	fileNames = cms.untracked.vstring('file:/nfs/dust/cms/user/usaiem/gen2/'+name+'/Events/prova1/unweighted_events.lhe')
 )
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
@@ -28,6 +31,6 @@ process.lhedump = cms.EDAnalyzer("DummyLHEAnalyzer",
                                 src = cms.InputTag("source")
                                 )
 
-process.TFileService=cms.Service("TFileService",fileName=cms.string('out.root'))
+process.TFileService=cms.Service("TFileService",fileName=cms.string(name+'.root'))
 
 process.outpath = cms.EndPath(process.LHE+process.lhedump)

@@ -224,6 +224,10 @@ if(!(
        if (abs(idup_[icount])==25) histos1D_[ "hPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
        if (abs(idup_[icount])==25) histos1D_[ "hM" ]->Fill((pup_[icount])[4]);
 
+       if (abs(idup_[icount])==13) histos1D_[ "muPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
+
+       if (abs(idup_[icount])==24) histos1D_[ "wM" ]->Fill((pup_[icount])[4]);
+
     }
     if( evt->weights().size() ) {
       //std::cout << "weights:" << std::endl;
@@ -261,6 +265,10 @@ edm::Service< TFileService > fileService;
 //tH specific
   histos1D_[ "hPt" ] = fileService->make< TH1D >( "hPt", ";H from T' p_{T} [GeV];Events", 200, 0., 2000);
   histos1D_[ "hM" ] = fileService->make< TH1D >( "hM", ";H mass [GeV];Events", 100, 80, 180);
+
+  histos1D_[ "muPt" ] = fileService->make< TH1D >( "muPt", ";mu p_{T} [GeV];Events", 200, 0., 1000);
+
+  histos1D_[ "wM" ] = fileService->make< TH1D >( "wM", ";W mass [GeV];Events", 100, 70, 100);
 
     // Handle<LHERunInfoProduct> run;
     // iRun.getByLabel( src_, run );

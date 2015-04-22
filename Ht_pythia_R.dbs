@@ -1,0 +1,3 @@
+[Ht_pythia_R]
+prefix = file:/nfs/dust/cms/user/usaiem/gen/Ht_pythia_R
+Ht_pythia_R.root = 10000

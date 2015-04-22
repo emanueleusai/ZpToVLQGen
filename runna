@@ -1,0 +1,10 @@
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Ht_lept_L
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Ht_lept_R
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Ht_pythia_L
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Ht_pythia_R
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Wb_lept_L
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Wb_lept_R
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Wb_pythia_L
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Wb_pythia_R
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Zt_lept_L
+cmsRun ZpToVLQGenAnalyzer/python/testReader_cfg.py Zt_lept_R

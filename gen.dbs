@@ -1,0 +1,3 @@
+[gen]
+prefix = file:/nfs/dust/cms/user/usaiem/gen
+gen.root = 5000
