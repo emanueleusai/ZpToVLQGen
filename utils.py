@@ -42,7 +42,7 @@ def compare(name,file_list,name_list,legend_list,normalize=False,drawoption='hE'
     # tfile_list.append(TFile(file_list[i],'READ'))
     histo_list.append(file_list[i].Get(name_list[i]))
     if normalize:
-      histo_list[-1].Scale(1.0/(histo_list[-1].Integral()+0.00000001))
+      histo_list[-1].Scale(1.0/(histo_list[-1].Integral()+0.00000001), "width")
     if not histo_list[-1].ClassName()=='TGraphAsymmErrors':
       histo_list[-1].SetStats(0)
     histo_list[-1].SetLineWidth(3)
