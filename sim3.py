@@ -29,7 +29,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:/nfs/dust/cms/user/usaiem/gen/.root'),
+    fileNames = cms.untracked.vstring('file:/nfs/dust/cms/user/usaiem/gen/Wb_pythia_L.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 

@@ -15,6 +15,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "TH2.h"
 #include "TH1.h"
+#include "TLorentzVector.h"
 
 using namespace std;
 using namespace edm;
@@ -58,6 +59,11 @@ private:
       }
     }
     return true;
+  }
+
+  float getpt(int icount, std::vector<lhef::HEPEUP::FiveVector> pup_)
+  {
+    return sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2));
   }
 
   void analyze( const Event & iEvent, const EventSetup & iSetup ) override {
@@ -186,8 +192,9 @@ if(!(
 //               }
 } 
 
+  int muonpdgid=5;
 
-
+    std::vector<unsigned int> muons;
     for ( unsigned int icount = 0 ; icount < (unsigned int)nup_; icount++ ) {
 
       // std::cout << "# " << std::setw(14) << std::fixed << icount 
@@ -224,11 +231,49 @@ if(!(
        if (abs(idup_[icount])==25) histos1D_[ "hPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
        if (abs(idup_[icount])==25) histos1D_[ "hM" ]->Fill((pup_[icount])[4]);
 
-       if (abs(idup_[icount])==13) histos1D_[ "muPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
+       if (abs(idup_[icount])==muonpdgid) histos1D_[ "muPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
+
+       if (abs(idup_[icount])==muonpdgid) muons.push_back(icount);
 
        if (abs(idup_[icount])==24) histos1D_[ "wM" ]->Fill((pup_[icount])[4]);
 
+       if (idup_[icount]==muonpdgid) histos1D_[ "muMinusPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
+       if (idup_[icount]==-muonpdgid) histos1D_[ "muPlusPt" ]->Fill(sqrt(pow((pup_[icount])[0],2)+pow((pup_[icount])[1],2)));
+
     }
+    if (muons.size()>1)
+    {
+      if (getpt(muons[0],pup_)>getpt(muons[1],pup_))
+      {
+        histos1D_[ "muZLeadingPt" ]->Fill(getpt(muons[0],pup_));
+        if (idup_[muons[0]]==muonpdgid)
+        {
+          histos1D_[ "muZLeadingMinusPt" ]->Fill(getpt(muons[0],pup_));
+        } 
+        else
+        {
+          histos1D_[ "muZLeadingPlusPt" ]->Fill(getpt(muons[0],pup_));
+        }
+        histos1D_[ "muZSubLeadingPt" ]->Fill(getpt(muons[1],pup_));
+      }
+      else
+      {
+        histos1D_[ "muZLeadingPt" ]->Fill(getpt(muons[1],pup_));
+        if (idup_[muons[1]]==muonpdgid)
+        {
+          histos1D_[ "muZLeadingMinusPt" ]->Fill(getpt(muons[1],pup_));
+        } 
+        else
+        {
+          histos1D_[ "muZLeadingPlusPt" ]->Fill(getpt(muons[1],pup_));
+        }
+        histos1D_[ "muZSubLeadingPt" ]->Fill(getpt(muons[0],pup_));
+      }
+      TLorentzVector mu1((pup_[muons[0]])[0],(pup_[muons[0]])[1],(pup_[muons[0]])[2],(pup_[muons[0]])[3]);
+      TLorentzVector mu2((pup_[muons[1]])[0],(pup_[muons[1]])[1],(pup_[muons[1]])[2],(pup_[muons[1]])[3]);
+      histos1D_[ "muZDeltaR" ]->Fill(mu1.DeltaR(mu2));
+    }
+
     if( evt->weights().size() ) {
       //std::cout << "weights:" << std::endl;
       for ( size_t iwgt = 0; iwgt < evt->weights().size(); ++iwgt ) {
@@ -266,7 +311,18 @@ edm::Service< TFileService > fileService;
   histos1D_[ "hPt" ] = fileService->make< TH1D >( "hPt", ";H from T' p_{T} [GeV];Events", 200, 0., 2000);
   histos1D_[ "hM" ] = fileService->make< TH1D >( "hM", ";H mass [GeV];Events", 100, 80, 180);
 
-  histos1D_[ "muPt" ] = fileService->make< TH1D >( "muPt", ";mu p_{T} [GeV];Events", 200, 0., 1000);
+  histos1D_[ "muPt" ] = fileService->make< TH1D >( "muPt", ";#mu p_{T} [GeV];Events", 200, 0., 1000);
+  histos1D_[ "muZLeadingPt" ] = fileService->make< TH1D >( "muZLeadingPt", ";leading #mu p_{T} [GeV];Events", 200, 0., 1000);
+  histos1D_[ "muZSubLeadingPt" ] = fileService->make< TH1D >( "muZSubLeadingPt", ";subleading #mu p_{T} [GeV];Events", 200, 0., 1000);
+  histos1D_[ "muZDeltaR" ] = fileService->make< TH1D >( "muZDeltaR", ";#mu #Delta R [GeV];Events", 200, 0., 5);
+
+  histos1D_[ "muPlusPt" ] = fileService->make< TH1D >( "muPlusPt", ";#mu^{+} p_{T} [GeV];Events", 200, 0., 1000);
+  histos1D_[ "muMinusPt" ] = fileService->make< TH1D >( "muMinusPt", ";#mu^{-} p_{T} [GeV];Events", 200, 0., 1000);
+
+  histos1D_[ "muZLeadingPlusPt" ] = fileService->make< TH1D >( "muZLeadingPlusPt", ";leading #mu p_{T} [GeV];Events", 200, 0., 1000);
+  histos1D_[ "muZLeadingMinusPt" ] = fileService->make< TH1D >( "muZLeadingMinusPt", ";leading #mu p_{T} [GeV];Events", 200, 0., 1000);
+
+
 
   histos1D_[ "wM" ] = fileService->make< TH1D >( "wM", ";W mass [GeV];Events", 100, 70, 100);
 
