@@ -1,5 +1,5 @@
 ! 1) Settings used in the main program.
-Main:numberOfEvents   = 10000        ! number of events to generate (-1 for all)
+Main:numberOfEvents   = 100000        ! number of events to generate (-1 for all)
 Main:timesAllowErrors = 30000          ! how many aborts before run stops
 
 ! 2) Settings related to output in init(), next() and stat().
@@ -16,8 +16,12 @@ Beams:frameType = 4
 ! Beams:LHEF = unweighted_events.lhe
 ! Beams:LHEF = Ht_nodecay_L.lhe
 ! Beams:LHEF = Ht_nodecay_R.lhe
+
+! Beams:LHEF = /nfs/dust/cms/user/usaiem/gen2/Ht_pythia_L/Events/prova2/unweighted_events.lhe
 ! Beams:LHEF = /nfs/dust/cms/user/usaiem/gen2/Ht_pythia_R/Events/prova2/unweighted_events.lhe
-Beams:LHEF = Ht_mumu_R.lhe
+! Beams:LHEF = Ht_mumu_L.lhe
+ Beams:LHEF = Ht_mumu_R.lhe
+
 
 ! off for testing purposes only
 PartonLevel:MPI = off
