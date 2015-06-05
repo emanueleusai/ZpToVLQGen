@@ -1,3 +1,11 @@
 [gen]
 prefix = file:/nfs/dust/cms/user/usaiem/gen
+Ht_lept_L.root = 10000
+Ht_lept_R.root = 10000
+Ht_pythia_L.root = 10000
+Ht_pythia_R.root = 10000
+Wb_pythia_L.root = 10000
+Wb_pythia_R.root = 10000
 gen.root = 5000
+genall.root = 10000
+had.root = 10000

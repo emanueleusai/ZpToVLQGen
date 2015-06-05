@@ -192,7 +192,7 @@ if(!(
 //               }
 } 
 
-  int muonpdgid=5;
+  int muonpdgid=13;
 
     std::vector<unsigned int> muons;
     for ( unsigned int icount = 0 ; icount < (unsigned int)nup_; icount++ ) {

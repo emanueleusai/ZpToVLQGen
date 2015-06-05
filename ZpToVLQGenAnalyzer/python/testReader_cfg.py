@@ -7,7 +7,7 @@ name=sys.argv[2]
 process = cms.Process("LHE")
 
 process.source = cms.Source("LHESource",
-	fileNames = cms.untracked.vstring('file:/nfs/dust/cms/user/usaiem/gen2/'+name+'/Events/prova1/unweighted_events.lhe')
+	fileNames = cms.untracked.vstring('file:/nfs/dust/cms/user/usaiem/gen2/'+name+'/Events/prova2/unweighted_events.lhe')
 )
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
